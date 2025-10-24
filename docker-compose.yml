@@ -1,12 +1,25 @@
 version: '3.8'
 
 services:
-  ml-pipeline:
+  credit-risk-ml:
     build: .
     volumes:
       - ./data:/app/data
       - ./models:/app/models
-      - ./logs:/app/logs
+      - ./reports:/app/reports
+      - ./notebooks:/app/notebooks
     environment:
       - PYTHONPATH=/app
     command: python main.py
+
+  jupyter:
+    build: .
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data:/app/data
+      - ./notebooks:/app/notebooks
+      - ./src:/app/src
+    environment:
+      - PYTHONPATH=/app
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token=''

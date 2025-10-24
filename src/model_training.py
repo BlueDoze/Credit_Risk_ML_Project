@@ -1,4 +1,5 @@
 from .hyperparameter_tuning import HyperparameterTuner
+from .utils import plot_confusion_matrix, plot_roc_curve, plot_precision_recall_curve, save_model_results, plot_feature_importance
 from config.model_configs import MODEL_CONFIGS
 import joblib
 import os
@@ -109,6 +110,45 @@ class ModelTrainingPipeline:
                     'best_score': result['best_score']
                 }
                 
+                # Generate and save visualization plots
+                y_pred = result['model'].predict(data['X_test'])
+                y_pred_proba = result['model'].predict_proba(data['X_test'])[:, 1]
+                
+                # Save plots
+                plots_dir = os.path.join(self.results_dir, 'plots', model_name, method)
+                os.makedirs(plots_dir, exist_ok=True)
+                
+                # Plot and save confusion matrix
+                plot_confusion_matrix(
+                    data['y_test'], 
+                    y_pred,
+                    f"{model_name}_{method}",
+                    save_path=os.path.join(plots_dir, 'confusion_matrix.png')
+                )
+                
+                # Plot and save ROC curve
+                plot_roc_curve(
+                    data['y_test'],
+                    y_pred_proba,
+                    f"{model_name}_{method}",
+                    save_path=os.path.join(plots_dir, 'roc_curve.png')
+                )
+                
+                # Plot and save precision-recall curve
+                plot_precision_recall_curve(
+                    data['y_test'],
+                    y_pred_proba,
+                    f"{model_name}_{method}",
+                    save_path=os.path.join(plots_dir, 'pr_curve.png')
+                )
+                
+                # Save model results
+                save_model_results(
+                    metrics,
+                    result['best_params'],
+                    os.path.join(plots_dir, 'results.json')
+                )
+                
                 # Save model
                 model_path = os.path.join(self.results_dir, f"{model_name}_{method}.joblib")
                 self.tuner.save_model(result['model'], model_path)
@@ -155,6 +195,16 @@ class ModelTrainingPipeline:
                 'feature': data['feature_names'],
                 'importance': importances
             }).sort_values('importance', ascending=False)
+            
+            # Plot and save feature importance
+            plots_dir = os.path.join(self.results_dir, 'plots', 'feature_importance')
+            os.makedirs(plots_dir, exist_ok=True)
+            
+            plot_feature_importance(
+                feature_importance_df,
+                f"Feature Importance - {self.best_model_name}",
+                save_path=os.path.join(plots_dir, 'feature_importance.png')
+            )
             
             return feature_importance_df
         return None

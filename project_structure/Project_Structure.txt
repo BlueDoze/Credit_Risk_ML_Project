@@ -1,0 +1,18 @@
+credit-risk-ml-pipeline/
+├── Dockerfile
+├── requirements.txt
+├── docker-compose.yml
+├── src/
+│   ├── __init__.py
+│   ├── data_processing.py
+│   ├── model_training.py
+│   ├── hyperparameter_tuning.py
+│   └── utils.py
+├── config/
+│   └── model_configs.py
+├── models/
+├── data/
+│   └── credit_risk_dataset.csv
+├── notebooks/
+│   └── exploration.ipynb
+└── main.py

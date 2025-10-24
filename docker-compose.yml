@@ -1,25 +1,26 @@
 version: '3.8'
 
 services:
-  credit-risk-ml:
+  ml-pipeline:
     build: .
+    restart: unless-stopped
+    working_dir: /app
     volumes:
       - ./data:/app/data
       - ./models:/app/models
-      - ./reports:/app/reports
-      - ./notebooks:/app/notebooks
+      - ./logs:/app/logs
     environment:
       - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
     command: python main.py
-
-  jupyter:
-    build: .
-    ports:
-      - "8888:8888"
-    volumes:
-      - ./data:/app/data
-      - ./notebooks:/app/notebooks
-      - ./src:/app/src
-    environment:
-      - PYTHONPATH=/app
-    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token=''
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/main.py"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

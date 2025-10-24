@@ -10,10 +10,16 @@ RUN apt-get update && apt-get install -y \
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install only production dependencies with optimized pip installation
+RUN pip install --no-cache-dir -r requirements.txt \
+    && find /usr/local/lib/python3.9/site-packages -name "*.pyc" -delete \
+    && find /usr/local/lib/python3.9/site-packages -name "__pycache__" -delete
 
 # Copy project files
-COPY . .
+# Copy only necessary files and directories
+COPY src/ /app/src/
+COPY config/ /app/config/
+COPY main.py /app/
 
 # Create necessary directories
 RUN mkdir -p models data logs
